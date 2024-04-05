@@ -1,12 +1,15 @@
 extends layout
 
 block content
-  h1 Movie Details
-  ul
-    li Title: #{movie.title}
-    li Director: #{movie.director}
-    li Year: #{movie.year}
-    li Notes: #{movie.notes}
-  a(href=`/movies/${movie._id}/edit`) Edit
-  form(action=`/movies/${movie._id}?_method=DELETE`, method="POST")
-    button(type="submit") Delete
+  div.container
+    h1#movie-details Movie Details
+    div.container2
+      ul
+        li#title Title: #{movie.title}
+        li#director Director: #{movie.director}
+        li#year Year: #{movie.year}
+        li#notes Notes: #{movie.notes}
+    form(action=`/movies/${movie._id}?_method=DELETE`, method="POST")
+      button.button.delete-button(type="submit") Delete
+    a.button.edit-button(href=`/movies/${movie._id}/edit`) Edit
+    a.button.home-button(href=`/movies`) Home

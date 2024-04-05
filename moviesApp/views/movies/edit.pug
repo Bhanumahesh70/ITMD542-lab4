@@ -1,14 +1,17 @@
 extends layout
 
 block content
-  h1 Edit Movie
-  form(action=`/movies/${movie._id}?_method=PUT`, method="POST")
-    label(for="title") Title:
-    input(type="text", id="title", name="title", value=movie.title, required)
-    label(for="director") Director:
-    input(type="text", id="director", name="director", value=movie.director, required)
-    label(for="year") Year:
-    input(type="text", id="year", name="year", value=movie.year, required)
-    label(for="notes") Notes:
-    textarea(id="notes", name="notes") #{movie.notes}
-    button(type="submit") Save
+  div.container
+    h1#edit-movie Edit Movie
+    form.edit-movie-form(action=`/movies/${movie._id}?_method=PUT`, method="POST")
+      label(for="title") Title:
+      input(type="text", id="title", name="title", value=movie.title, required)
+      label(for="director") Director:
+      input(type="text", id="director", name="director", value=movie.director, required)
+      label(for="year") Year:
+      input(type="text", id="year", name="year", value=movie.year, required)
+      label(for="notes") Notes:
+      textarea(id="notes", name="notes") #{movie.notes}
+      button.button.save-button(type="submit") Save
+    a.button.back-button(href=`/movies/${movie._id}`) Back 
+    a.button.home-button(href=`/movies`) Home
