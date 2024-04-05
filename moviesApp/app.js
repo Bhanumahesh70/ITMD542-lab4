@@ -5,13 +5,14 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mongoose = require('mongoose');/////
 require('dotenv').config();/////
+const bodyParser = require('body-parser');/////
 
 var indexRouter = require('./routes/index');
 var moviesRouter = require('./routes/movies');////
 var usersRouter = require('./routes/users');
 
 var app = express();
-const PORT = process.env.PORT || 3000;////
+const PORT = process.env.PORT || 3001;////
 
 // Connect to MongoDB Atlas
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -22,9 +23,8 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 const Movie = require('./models/movie');
 
 // Middleware
-app.set('view engine', 'pug');
-app.use(express.static('public'));
-app.use(bodyParser.urlencoded({ extended: true }));
+//app.set('view engine', 'pug');
+
 
 
 
@@ -33,6 +33,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
+
+app.use(express.static('public'));/////
+app.use(bodyParser.urlencoded({ extended: true }));////
 
 app.use(logger('dev'));
 app.use(express.json());

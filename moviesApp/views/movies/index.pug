@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  h1 All Movies
+  table
+    thead
+      tr
+        th Title
+        th Director
+        th Year
+        th Action
+    tbody
+      each movie in movies
+        tr
+          td= movie.title
+          td= movie.director
+          td= movie.year
+          td
+            a(href=`/movies/${movie._id.toString()}`) View
+

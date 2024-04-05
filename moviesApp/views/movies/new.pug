@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1 New Movie
+  form(action="/movies" method="POST")
+    label(for="title") Title:
+    input(type="text" id="title" name="title" required)
+    label(for="director") Director:
+    input(type="text" id="director" name="director" required)
+    label(for="year") Year:
+    input(type="text" id="year" name="year" required)
+    label(for="notes") Notes:
+    textarea(id="notes" name="notes")
+    button(type="submit") Save
