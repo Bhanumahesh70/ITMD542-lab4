@@ -99,15 +99,33 @@ router.get('/:id', async function(req, res, next) {
   });
   
   // PUT /movies/:id
-  router.post('/:id', async function(req, res, next) {
-    try {
-      const { title, director, year, notes } = req.body;
-      const movie = await Movie.findByIdAndUpdate(req.params.id, { title, director, year, notes }, { new: true });
-      res.redirect(`/movies/${movie._id}`);
-    } catch (error) {
-      next(error);
+router.post('/:id', async function(req, res, next) {
+  try {
+    // Extracting individual properties from req.body
+    const { title, director, year, notes } = req.body;
+    
+    // Validate required fields
+    if (!title || !director || !year) {
+      return res.status(400).send('Title, Director, and Year are required fields');
     }
-  });
+    
+    // Sanitize input
+    const sanitizedTitle = sanitizeInput(title.trim());
+    const sanitizedDirector = sanitizeInput(director.trim());
+    const sanitizedYear = sanitizeInput(year.trim());
+    const sanitizedNotes = notes ? sanitizeInput(notes.trim()) : '';
+    
+    const movie = await Movie.findByIdAndUpdate(
+      req.params.id, 
+      { title: sanitizedTitle, director: sanitizedDirector, year: sanitizedYear, notes: sanitizedNotes }, 
+      { new: true } // Return the updated document
+    );
+    res.redirect(`/movies/${movie._id}`);
+  } catch (error) {
+    next(error);
+  }
+});
+
   
   // DELETE /movies/:id
   router.delete('/:id', async function(req, res, next) {
