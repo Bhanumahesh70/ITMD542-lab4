@@ -1,6 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const Movie = require('../models/movie');
+const sanitizeHtml = require('sanitize-html');
+
+// Function to sanitize user input
+function sanitizeInput(input) {
+  return sanitizeHtml(input, {
+    allowedTags: [],
+    allowedAttributes: {},
+    exclusiveFilter: function(frame) {
+      //return frame.tag === 'script';
+      return frame.tag !== 'a' && frame.tag !== 'img'; // Allow <a> and <img> tags
+    }
+  });
+}
 
 // GET /movies
 router.get('/', async function(req, res, next) {
@@ -23,16 +36,35 @@ router.get('/new', async function(req, res, next) {
   });
 
   // POST /movies
-  router.post('/', async function(req, res, next) {
-    try {
-      const { title, director, year, notes } = req.body;
-      const movie = await Movie.create({ title, director, year, notes });
-      res.redirect(`/movies/${movie._id}`);
-    } catch (error) {
-        console.error('Error creating movie:', error);
-      next(error);
+router.post('/', async function(req, res, next) {
+  try {
+    // Extracting individual properties from req.body and trimming whitespace
+    const { title, director, year, notes } = req.body;
+    const trimmedTitle = title.trim();
+    const trimmedDirector = director.trim();
+    const trimmedYear = year.trim();
+    const trimmedNotes = notes ? notes.trim() : '';
+
+    // Validate required fields
+    if (!trimmedTitle || !trimmedDirector || !trimmedYear) {
+      return res.status(400).send('Title, Director, and Year are required fields');
     }
-  });
+
+    // Sanitize input
+    const sanitizedTitle = sanitizeInput(trimmedTitle);
+    const sanitizedDirector = sanitizeInput(trimmedDirector);
+    const sanitizedYear = sanitizeInput(trimmedYear);
+    const sanitizedNotes = notes ? sanitizeInput(trimmedNotes) : '';
+
+    // Create movie
+    const movie = await Movie.create({ title: sanitizedTitle, director: sanitizedDirector, year: sanitizedYear, notes: sanitizedNotes });
+    res.redirect(`/movies/${movie._id}`);
+  } catch (error) {
+    console.error('Error creating movie:', error);
+    next(error);
+  }
+});
+
 
 // GET /movies/:id
 router.get('/:id', async function(req, res, next) {
