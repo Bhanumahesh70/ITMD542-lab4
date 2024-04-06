@@ -3,13 +3,19 @@ extends layout
 block content
   div.container
     h1#new-movie New Movie
+    //- Display errors if any
+    if errors
+      ul
+        each error in errors
+          li= error.msg
+    //- Form
     form.new-movie-form(action="/movies" method="POST")
       label(for="title") Title:
-      input(type="text" id="title" name="title" required)
+      input(type="text" id="title" name="title" value=title required)
       label(for="director") Director:
-      input(type="text" id="director" name="director" required)
+      input(type="text" id="director" name="director" value=director required)
       label(for="year") Year:
-      input(type="text" id="year" name="year" required)
+      input(type="text" id="year" name="year" value=year required)
       label(for="notes") Notes:
-      textarea(id="notes" name="notes")
+      textarea(id="notes" name="notes") #{notes}
       button.button.save-button(type="submit") Save

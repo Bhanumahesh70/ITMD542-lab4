@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Movie = require('../models/movie');
 const sanitizeHtml = require('sanitize-html');
-
+const { body, validationResult } = require('express-validator');
 // Function to sanitize user input
 function sanitizeInput(input) {
   return sanitizeHtml(input, {
@@ -36,25 +36,27 @@ router.get('/new', async function(req, res, next) {
   });
 
   // POST /movies
-router.post('/', async function(req, res, next) {
+router.post('/', 
+// Validate input fields
+body('title').trim().notEmpty().withMessage('Title is required'),
+body('director').trim().notEmpty().withMessage('Director is required').isAlpha().withMessage('Director should start with an alphabetical letter'),
+body('year').trim().notEmpty().withMessage('Year is required').isInt().withMessage('Year should be a number'),
+async function(req, res, next) {
   try {
     // Extracting individual properties from req.body and trimming whitespace
     const { title, director, year, notes } = req.body;
-    const trimmedTitle = title.trim();
-    const trimmedDirector = director.trim();
-    const trimmedYear = year.trim();
-    const trimmedNotes = notes ? notes.trim() : '';
 
-    // Validate required fields
-    if (!trimmedTitle || !trimmedDirector || !trimmedYear) {
-      return res.status(400).send('Title, Director, and Year are required fields');
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).render('movies/new', { errors: errors.array(), title, director, year, notes });
     }
 
     // Sanitize input
-    const sanitizedTitle = sanitizeInput(trimmedTitle);
-    const sanitizedDirector = sanitizeInput(trimmedDirector);
-    const sanitizedYear = sanitizeInput(trimmedYear);
-    const sanitizedNotes = notes ? sanitizeInput(trimmedNotes) : '';
+    const sanitizedTitle = sanitizeInput(title.trim());
+    const sanitizedDirector = sanitizeInput(director.trim());
+    const sanitizedYear = sanitizeInput(year.trim());
+    const sanitizedNotes = notes ? sanitizeInput(notes.trim()) : '';
 
     // Create movie
     const movie = await Movie.create({ title: sanitizedTitle, director: sanitizedDirector, year: sanitizedYear, notes: sanitizedNotes });
@@ -63,8 +65,8 @@ router.post('/', async function(req, res, next) {
     console.error('Error creating movie:', error);
     next(error);
   }
-});
-
+}
+);
 
 // GET /movies/:id
 router.get('/:id', async function(req, res, next) {
@@ -99,15 +101,20 @@ router.get('/:id', async function(req, res, next) {
   });
   
   // PUT /movies/:id
-router.post('/:id', async function(req, res, next) {
-  console.log("edit button is clicked")
+router.put('/:id', 
+// Validate input fields
+body('title').trim().notEmpty().withMessage('Title is required'),
+body('director').trim().notEmpty().withMessage('Director is required').isAlpha().withMessage('Director should start with an alphabetical letter'),
+body('year').trim().notEmpty().withMessage('Year is required').isInt().withMessage('Year should be a number'),
+async function(req, res, next) {
   try {
     // Extracting individual properties from req.body
     const { title, director, year, notes } = req.body;
     
-    // Validate required fields
-    if (!title || !director || !year) {
-      return res.status(400).send('Title, Director, and Year are required fields');
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).render('movies/edit', { errors: errors.array(), movie: { _id: req.params.id, title, director, year, notes } });
     }
     
     // Sanitize input
@@ -125,7 +132,8 @@ router.post('/:id', async function(req, res, next) {
   } catch (error) {
     next(error);
   }
-});
+}
+);
 
   
   // DELETE /movies/:id

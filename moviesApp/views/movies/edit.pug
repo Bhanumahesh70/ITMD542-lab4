@@ -3,6 +3,10 @@ extends layout
 block content
   div.container
     h1#edit-movie Edit Movie
+    if errors
+      ul
+        each error in errors
+          li= error.msg
     form.edit-movie-form(action=`/movies/${movie._id}?_method=PUT`, method="POST")
       label(for="title") Title:
       input(type="text", id="title", name="title", value=movie.title, required)
