@@ -100,6 +100,7 @@ router.get('/:id', async function(req, res, next) {
   
   // PUT /movies/:id
 router.post('/:id', async function(req, res, next) {
+  console.log("edit button is clicked")
   try {
     // Extracting individual properties from req.body
     const { title, director, year, notes } = req.body;
@@ -129,8 +130,10 @@ router.post('/:id', async function(req, res, next) {
   
   // DELETE /movies/:id
   router.delete('/:id', async function(req, res, next) {
+    console.log("Delete method is invoked")
     try {
       await Movie.findByIdAndDelete(req.params.id);
+      console.log("redirect to /movies")
       res.redirect('/movies');
     } catch (error) {
       next(error);

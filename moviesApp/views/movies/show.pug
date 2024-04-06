@@ -9,9 +9,9 @@ block content
         li#director Director: #{movie.director}
         li#year Year: #{movie.year}
         li#notes Notes: #{movie.notes}
-    form(id="delete-form" method="POST") 
-      input(type="hidden" name="_method" value="DELETE") 
-      button.button.delete-button(type="button") Delete 
+    form(id="delete-form", method="POST", action=`/movies/${movie._id}?_method=DELETE`)
+      input(type="hidden", name="_method", value="DELETE")
+      button.button.delete-button(type="submit") Delete 
     a.button.edit-button(href=`/movies/${movie._id}/edit`) Edit
     a.button.home-button(href=`/movies`) Home 
 
@@ -19,24 +19,32 @@ block content
   script.
     document.addEventListener('DOMContentLoaded', function() {
       const deleteButton = document.querySelector('.delete-button');
-      const deleteForm = document.getElementById('delete-form');
-
-      deleteButton.addEventListener('click', function() {
+      
+      deleteButton.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+        console.log("delete button is clicked")
         if (confirm('Are you sure you want to delete this movie?')) {
           // Submit the form via AJAX
-          fetch(deleteForm.action, {
-            method: 'POST',
-            body: new FormData(deleteForm),
+          fetch(document.getElementById('delete-form').action, {
+            //cosole.log("inside fetch")
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json' // Set the content type to JSON
+            },
+            body: JSON.stringify({}) // No need to send any body data
           })
           .then(response => {
             if (response.ok) {
               // Redirect to the movies page after successful deletion
+              //cosole.log("Redirect to the movies page after successful deletion")
               window.location.href = '/movies';
             } else {
+             // console.log("response is not ok")
               throw new Error('Failed to delete movie');
             }
           })
           .catch(error => {
+            //console.log("not in fetch got error")
             console.error(error);
             // Handle error
           });
