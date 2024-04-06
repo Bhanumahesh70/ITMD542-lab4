@@ -40,7 +40,7 @@ router.post('/',
 // Validate input fields
 body('title').trim().notEmpty().withMessage('Title is required'),
 body('director').trim().notEmpty().withMessage('Director is required').isAlpha().withMessage('Director should start with an alphabetical letter'),
-body('year').trim().notEmpty().withMessage('Year is required').isInt().withMessage('Year should be a number'),
+body('year').trim().notEmpty().withMessage('Year is required').isInt().withMessage('Year should be a number').isLength({ min: 4, max: 4 }).withMessage('Year should be a four-digit number'),
 async function(req, res, next) {
   try {
     // Extracting individual properties from req.body and trimming whitespace
@@ -52,10 +52,16 @@ async function(req, res, next) {
       return res.status(400).render('movies/new', { errors: errors.array(), title, director, year, notes });
     }
 
+    // Check if year is within a reasonable range
+    const yearInt = parseInt(year);
+    if (yearInt < 1900 || yearInt > 2100) {
+      return res.status(400).render('movies/new', { errors: [{ msg: 'Year should be between 1900 and 2100' }], title, director, year, notes });
+    }
+
     // Sanitize input
     const sanitizedTitle = sanitizeInput(title.trim());
     const sanitizedDirector = sanitizeInput(director.trim());
-    const sanitizedYear = sanitizeInput(year.trim());
+    const sanitizedYear = sanitizedYear; // no need to sanitize further as it's already sanitized as a number
     const sanitizedNotes = notes ? sanitizeInput(notes.trim()) : '';
 
     // Create movie
@@ -100,41 +106,46 @@ router.get('/:id', async function(req, res, next) {
     }
   });
   
-  // PUT /movies/:id
+// PUT /movies/:id
 router.put('/:id', 
-// Validate input fields
-body('title').trim().notEmpty().withMessage('Title is required'),
-body('director').trim().notEmpty().withMessage('Director is required').isAlpha().withMessage('Director should start with an alphabetical letter'),
-body('year').trim().notEmpty().withMessage('Year is required').isInt().withMessage('Year should be a number'),
-async function(req, res, next) {
-  try {
-    // Extracting individual properties from req.body
-    const { title, director, year, notes } = req.body;
-    
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).render('movies/edit', { errors: errors.array(), movie: { _id: req.params.id, title, director, year, notes } });
-    }
-    
-    // Sanitize input
-    const sanitizedTitle = sanitizeInput(title.trim());
-    const sanitizedDirector = sanitizeInput(director.trim());
-    const sanitizedYear = sanitizeInput(year.trim());
-    const sanitizedNotes = notes ? sanitizeInput(notes.trim()) : '';
-    
-    const movie = await Movie.findByIdAndUpdate(
-      req.params.id, 
-      { title: sanitizedTitle, director: sanitizedDirector, year: sanitizedYear, notes: sanitizedNotes }, 
-      { new: true } // Return the updated document
-    );
-    res.redirect(`/movies/${movie._id}`);
-  } catch (error) {
-    next(error);
-  }
-}
-);
+  // Validate input fields
+  body('title').trim().notEmpty().withMessage('Title is required'),
+  body('director').trim().notEmpty().withMessage('Director is required').isAlpha().withMessage('Director should start with an alphabetical letter'),
+  body('year').trim().notEmpty().withMessage('Year is required').isInt().withMessage('Year should be a number').isLength({ min: 4, max: 4 }).withMessage('Year should be a four-digit number'),
+  async function(req, res, next) {
+    try {
+      // Extracting individual properties from req.body
+      const { title, director, year, notes } = req.body;
+      
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).render('movies/edit', { errors: errors.array(), movie: { _id: req.params.id, title, director, year, notes } });
+      }
+      
+      // Check if year is within a reasonable range
+      const yearInt = parseInt(year);
+      if (yearInt < 1900 || yearInt > 2100) {
+        return res.status(400).render('movies/edit', { errors: [{ msg: 'Year should be between 1900 and 2100' }], movie: { _id: req.params.id, title, director, year, notes } });
+      }
 
+      // Sanitize input
+      const sanitizedTitle = sanitizeInput(title.trim());
+      const sanitizedDirector = sanitizeInput(director.trim());
+      const sanitizedYear = sanitizedYear; // no need to sanitize further as it's already sanitized as a number
+      const sanitizedNotes = notes ? sanitizeInput(notes.trim()) : '';
+      
+      const movie = await Movie.findByIdAndUpdate(
+        req.params.id, 
+        { title: sanitizedTitle, director: sanitizedDirector, year: sanitizedYear, notes: sanitizedNotes }, 
+        { new: true } // Return the updated document
+      );
+      res.redirect(`/movies/${movie._id}`);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
   
   // DELETE /movies/:id
   router.delete('/:id', async function(req, res, next) {
